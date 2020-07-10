@@ -20,9 +20,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+#include <Python.h>
+#include <numpy/arrayobject.h>
 #include <libavutil/motion_vector.h>
 #include <libavformat/avformat.h>
+#include "stdlib.h"
 
 static AVFormatContext *fmt_ctx = NULL;
 static AVCodecContext *video_dec_ctx = NULL;
@@ -33,8 +36,19 @@ static int video_stream_idx = -1;
 static AVFrame *frame = NULL;
 static int video_frame_count = 0;
 
+static int maxfr, minfr, maxmv = 0, minmv = INT_MAX;
+
+PyObject *pModule, *pFunc, *pArgs;
+
+// convert C arrary to numpy arrary
+PyObject *make_numpyArray(int array[], int size) {
+    npy_intp dims[1] = {size};
+    return PyArray_SimpleNewFromData (1, dims, NPY_INT, array);
+}
+
 static int decode_packet(const AVPacket *pkt)
-{
+{   
+    int mv_arr [8];
     int ret = avcodec_send_packet(video_dec_ctx, pkt);
     if (ret < 0) {
         fprintf(stderr, "Error while sending a packet to the decoder: %s\n", av_err2str(ret));
@@ -55,21 +69,37 @@ static int decode_packet(const AVPacket *pkt)
             AVFrameSideData *sd;
 
             video_frame_count++;
+            printf("\rProcessing frame: %d\r", video_frame_count);
             sd = av_frame_get_side_data(frame, AV_FRAME_DATA_MOTION_VECTORS);
             if (sd) {
                 const AVMotionVector *mvs = (const AVMotionVector *)sd->data;
-                for (i = 0; i < sd->size / sizeof(*mvs); i++) {
+                int num_mvs = sd->size / sizeof(*mvs);
+                if (num_mvs > maxmv) {
+                    maxmv = num_mvs;
+                    maxfr = video_frame_count;
+                }
+                else if(num_mvs < minmv) {
+                    minmv = num_mvs;
+                    minfr = video_frame_count;
+                }
+                // Pass mvs data to python
+                for (i = 0; i < num_mvs; i++) {
                     const AVMotionVector *mv = &mvs[i];
-                    printf("%d,%2d,%2d,%2d,%4d,%4d,%4d,%4d,0x%"PRIx64"\n",
-                        video_frame_count, mv->source,
-                        mv->w, mv->h, mv->src_x, mv->src_y,
-                        mv->dst_x, mv->dst_y, mv->flags);
+                    mv_arr [0] = video_frame_count;
+                    mv_arr [1] = mv->source;
+                    mv_arr [2] = mv->w;
+                    mv_arr [3] = mv->h;
+                    mv_arr [4] = mv->src_x;
+                    mv_arr [5] = mv->src_y;
+                    mv_arr [6] = mv->dst_x;
+                    mv_arr [7] = mv->dst_y;
+                    PyTuple_SetItem(pArgs, 0, make_numpyArray(mv_arr, 8)) ;
+                    PyObject* pResult = PyObject_CallObject(pFunc, pArgs);
                 }
             }
             av_frame_unref(frame);
         }
     }
-
     return 0;
 }
 
@@ -120,6 +150,27 @@ static int open_codec_context(AVFormatContext *fmt_ctx, enum AVMediaType type)
 
 int main(int argc, char **argv)
 {
+    // Initialize Python embedding
+    Py_Initialize();
+    PyRun_SimpleString("import sys");
+    PyRun_SimpleString("sys.path.append(\".\")");
+    import_array ();  
+    char* pyModuleName = "py_emb";
+    char* pyFuncName = "showMvsEachFr";
+    pModule = PyImport_ImportModule(pyModuleName);
+    if (pModule == NULL){
+        PyErr_Print();
+        fprintf(stderr, "Failed to load \"%s\"\n", pyModuleName);
+        return 1;
+    }
+    pFunc = PyObject_GetAttrString(pModule, pyFuncName);
+    if (!pFunc || !PyCallable_Check(pFunc)){
+        if (PyErr_Occurred())
+            PyErr_Print();
+        fprintf(stderr, "Cannot find function \"%s\"\n", pyFuncName);
+    }
+    pArgs = PyTuple_New(1);
+
     int ret = 0;
     AVPacket pkt = { 0 };
 
@@ -156,7 +207,6 @@ int main(int argc, char **argv)
         goto end;
     }
 
-    printf("framenum,source,blockw,blockh,srcx,srcy,dstx,dsty,flags\n");
 
     /* read frames from the file */
     while (av_read_frame(fmt_ctx, &pkt) >= 0) {
@@ -166,11 +216,16 @@ int main(int argc, char **argv)
         if (ret < 0)
             break;
     }
-
+    printf("\nmax mv = %d at frame %d\n"
+             "min mv = %d at frame %d\n",
+            maxmv, minmv, maxfr, minfr);
     /* flush cached frames */
     decode_packet(NULL);
 
 end:
+    Py_DECREF(pModule);
+    Py_XDECREF(pFunc);
+    Py_DECREF(pModule);
     avcodec_free_context(&video_dec_ctx);
     avformat_close_input(&fmt_ctx);
     av_frame_free(&frame);
