@@ -1,34 +1,34 @@
-# mv-get-realtime
+# MV-get-realtime
 
 ## File Description
 
 ### extract_mvs.c
-Extracts and passes the motion vectors (mv) data for each individual decoding of a frame as numpy array to the module `py_emb.py` in the format of `[frame number, source, width, height, x0, y0, x1, y1]`. It also passes the quantities of mv inside each frame to `stdout`, and computes the max and min value.
+Extracts and passes the motion vectors (MV) data for each individual decoding of a frame as numpy array to the module `py_emb.py` in the format of `[frame number, source, width, height, x0, y0, x1, y1]`. It also passes the quantities of MV inside each frame to `stdout`, and computes the max and min value.
 
 Compile: `Makefile`
 
 Usage: `./extact_mvs [input video]`
 
 ### py_emb.py
-Embedded module in `extract.c`. Receives numpy array about mv data (frame-by-frame) for further application.
+Embedded module in `extract.c`. Receives numpy array about MV data (frame-by-frame) for further application.
 
 ### mpegutils.c
-Dumps macroblock (mb) type data to `stderr`.
+Dumps macroblock (MB) type data to `stderr`.
 
 Compile: copy and replace the file to `ffmpeg/source/libavcodec`, then re-build ffmpeg.
 
 Usage: `./ffmpeg -debug mb_type -i [input video] -thread_type none [output video]`
 
 ### plotframeinfo.py
-Plots stacked bar chart of mv and mb for a given frame.
+Plots stacked bar chart of MV and MB for a given frame.
 
-Usage: `python3 plotframeinfo.py [mv data] [mb data] [frame number]`
+Usage: `python3 plotframeinfo.py [MV data] [MB data] [frame number]`
 
 ### mvs.txt
-Contains mv data as `frame number, mv quantity`
+Contains MV data as `frame number, MV quantity`
 
 ### mbdata_clean.txt
-Contains mb type data as `##FRAME## INTRA=quantity, SKIP=quantity, INTER=quantity`. Line number is equivalent to frame number.
+Contains MB type data as `##FRAME## INTRA=quantity, SKIP=quantity, INTER=quantity`. Line number is equivalent to frame number.
 
 ## MB type index
 
