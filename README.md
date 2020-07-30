@@ -15,9 +15,9 @@ Embedded module in `extract.c`. Receives numpy array about MV data (frame-by-fra
 ### mpegutils.c
 Dumps macroblock (MB) type data to `stderr`.
 
-Compile: copy and replace the file to `ffmpeg/source/libavcodec`, then re-build ffmpeg.
+Compile: copy and replace the file to `ffmpeg/libavcodec`, then re-build ffmpeg.
 
-Usage: `./ffmpeg -debug mb_type -i [input video] -thread_type none [output video]`
+Usage: `ffmpeg -debug mb_type -i [input video] -thread_type none [output video]`
 
 ### plotframeinfo.py
 Plots stacked bar chart of MV and MB for a given frame.

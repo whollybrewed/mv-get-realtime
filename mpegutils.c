@@ -274,8 +274,8 @@ void ff_print_debug_info2(AVCodecContext *avctx, AVFrame *pict, uint8_t *mbskip_
             }
         }
         // av_log(avctx, AV_LOG_DEBUG, "\n");
-        av_log(avctx, AV_LOG_DEBUG, "\n##FRAME## INTRA=%d, SKIP=%d, INTER=%d\n", 
-                                                num_intra, num_skip, num_inter);
+        fprintf(stderr, "##FRAME## INTRA=%d, SKIP=%d, INTER=%d\n", 
+                                    num_intra, num_skip, num_inter);
     }
 
 #if FF_API_DEBUG_MV
