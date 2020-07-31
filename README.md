@@ -19,6 +19,15 @@ Compile: copy and replace the file to `ffmpeg/libavcodec`, then re-build ffmpeg.
 
 Usage: `ffmpeg -debug mb_type -i <input video> -thread_type none <output video>`
 
+### analyse.c
+Compute costs for each possible MB type (SKIP, INTRA, INTER), then decide the best type to encode.
+
+Compile: copy and replace the file to `x264/encoder`, then re-build libx264 and ffmpeg.
+
+Usage: use ffmpeg to compress a video file with H.264 codec, the output video will not have INTRA MB in its P-slice\
+e.g. `ffmpeg -i <input.mp4> -c:v libx264 -bf 0 <output.mp4>`
+
+
 ### plotframeinfo.py
 Plots stacked bar chart of MV and MB for a given frame.
 
