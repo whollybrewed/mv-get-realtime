@@ -3,17 +3,21 @@ import re
 import matplotlib.pyplot as plt
 
 frDict = {}
+# read MV data
 with open(sys.argv[1], 'r') as f:
     for line in f:
         splitLine = line.split(", ")
         frDict[int(splitLine[0])] = int(splitLine[1])
 f.close()
 
+# read MB type data
 with open(sys.argv[2], 'r') as f:
     i = 0
     for line in f:
         i = i + 1
         mbList = (list(map(int, re.findall('\d+', line))))
+        # Do not include MB size info
+        mbList = mbList[0:3]
         if i in frDict:
             mbList.append(frDict[i])
         else:
@@ -21,6 +25,7 @@ with open(sys.argv[2], 'r') as f:
         frDict[i] = mbList
 f.close()
 
+# plotting
 frame = int(sys.argv[3])
 plotList = frDict[frame]
 
