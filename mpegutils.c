@@ -106,6 +106,7 @@ void ff_print_debug_info2(AVCodecContext *avctx, AVFrame *pict, uint8_t *mbskip_
                          int mb_width, int mb_height, int mb_stride, int quarter_sample)
 {
     int num_inter = 0, num_intra = 0, num_skip = 0;
+    int size_16 = 0, size_other = 0;
     if ((avctx->export_side_data & AV_CODEC_EXPORT_DATA_MVS) && mbtype_table && motion_val[0]) {
         const int shift = 1 + quarter_sample;
         const int scale = 1 << shift;
@@ -254,17 +255,21 @@ void ff_print_debug_info2(AVCodecContext *avctx, AVFrame *pict, uint8_t *mbskip_
                     }
 
                     // segmentation
-                    // if (IS_8X8(mb_type))
+                     if (IS_8X8(mb_type))
                     //     av_log(avctx, AV_LOG_DEBUG, "+");
-                    // else if (IS_16X8(mb_type))
+                            size_other++;
+                     else if (IS_16X8(mb_type))
                     //     av_log(avctx, AV_LOG_DEBUG, "-");
-                    // else if (IS_8X16(mb_type))
+                            size_other++;
+                     else if (IS_8X16(mb_type))
                     //     av_log(avctx, AV_LOG_DEBUG, "|");
-                    // else if (IS_INTRA(mb_type) || IS_16X16(mb_type))
+                            size_other++;
+                     else if (IS_16X16(mb_type))
                     //     av_log(avctx, AV_LOG_DEBUG, " ");
-                    // else
+                            size_16++;
+                     else
                     //     av_log(avctx, AV_LOG_DEBUG, "?");
-
+                            size_other++;
 
                     // if (IS_INTERLACED(mb_type))
                     //     av_log(avctx, AV_LOG_DEBUG, "=");
@@ -274,9 +279,8 @@ void ff_print_debug_info2(AVCodecContext *avctx, AVFrame *pict, uint8_t *mbskip_
             }
         }
         // av_log(avctx, AV_LOG_DEBUG, "\n");
-        fprintf(stderr, "##FRAME## INTRA=%d, SKIP=%d, INTER=%d\n", 
-                                    num_intra, num_skip, num_inter);
-    }
+        fprintf(stderr, "##FRAME## INTRA=%d, SKIP=%d, INTER=%d, B16=%d, BX=%d\n", 
+                                    num_intra, num_skip, num_inter, size_16, size_other);}
 
 #if FF_API_DEBUG_MV
     if ((avctx->debug & (FF_DEBUG_VIS_QP | FF_DEBUG_VIS_MB_TYPE)) ||
