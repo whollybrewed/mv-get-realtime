@@ -2975,7 +2975,7 @@ intra_analysis:
                 {
                     h->mb.i_partition = D_16x16;
                     /* Use the P-SKIP MV if we can... */
-                    if( !M32(h->mb.cache.pskip_mv) )
+                    if( 0 )
                     {
                         b_skip = 1;
                         h->mb.i_type = P_SKIP;
@@ -3057,8 +3057,7 @@ skip_analysis:
             i_partition = D_16x16;
             i_cost = analysis.l0.me16x16.cost;
 
-            if( ( flags & X264_ANALYSE_PSUB16x16 ) && (!analysis.b_early_terminate ||
-                analysis.l0.i_cost8x8 < analysis.l0.me16x16.cost) )
+            if( 0 )
             {
                 i_type = P_8x8;
                 i_partition = D_8x8;
@@ -3102,14 +3101,14 @@ skip_analysis:
                 analysis.i_cost_est16x8[1] = analysis.i_satd8x8[0][2] + analysis.i_satd8x8[0][3] + i_avg_mv_ref_cost;
 
                 mb_analyse_inter_p16x8( h, &analysis, i_cost );
-                COPY3_IF_LT( i_cost, analysis.l0.i_cost16x8, i_type, P_L0, i_partition, D_16x8 );
+                COPY3_IF_LT( i_cost, analysis.l0.i_cost16x8, i_type, P_L0, i_partition, D_16x16 );
 
                 i_avg_mv_ref_cost = (analysis.l0.me8x8[1].cost_mv + analysis.l0.me8x8[1].i_ref_cost
                                   + analysis.l0.me8x8[3].cost_mv + analysis.l0.me8x8[3].i_ref_cost + 1) >> 1;
                 analysis.i_cost_est8x16[1] = analysis.i_satd8x8[0][1] + analysis.i_satd8x8[0][3] + i_avg_mv_ref_cost;
 
                 mb_analyse_inter_p8x16( h, &analysis, i_cost );
-                COPY3_IF_LT( i_cost, analysis.l0.i_cost8x16, i_type, P_L0, i_partition, D_8x16 );
+                COPY3_IF_LT( i_cost, analysis.l0.i_cost8x16, i_type, P_L0, i_partition, D_16x16 );
             }
 
             h->mb.i_partition = i_partition;
@@ -3208,9 +3207,9 @@ skip_analysis:
                 i_type = P_L0;
                 i_partition = D_16x16;
                 i_cost = analysis.l0.i_rd16x16;
-                COPY2_IF_LT( i_cost, analysis.l0.i_cost16x8, i_partition, D_16x8 );
-                COPY2_IF_LT( i_cost, analysis.l0.i_cost8x16, i_partition, D_8x16 );
-                COPY3_IF_LT( i_cost, analysis.l0.i_cost8x8, i_partition, D_8x8, i_type, P_8x8 );
+                COPY2_IF_LT( i_cost, analysis.l0.i_cost16x8, i_partition, D_16x16 );
+                COPY2_IF_LT( i_cost, analysis.l0.i_cost8x16, i_partition, D_16x16 );
+                COPY3_IF_LT( i_cost, analysis.l0.i_cost8x8, i_partition, D_16x16, i_type, P_L0 );
                 h->mb.i_type = i_type;
                 h->mb.i_partition = i_partition;
                 if( i_cost < COST_MAX )
@@ -3580,9 +3579,9 @@ skip_analysis:
                 COPY2_IF_LT( i_cost, analysis.l1.i_rd16x16, i_type, B_L1_L1 );
                 COPY2_IF_LT( i_cost, analysis.i_rd16x16bi, i_type, B_BI_BI );
                 COPY2_IF_LT( i_cost, analysis.i_rd16x16direct, i_type, B_DIRECT );
-                COPY3_IF_LT( i_cost, analysis.i_rd16x8bi, i_type, analysis.i_mb_type16x8, i_partition, D_16x8 );
-                COPY3_IF_LT( i_cost, analysis.i_rd8x16bi, i_type, analysis.i_mb_type8x16, i_partition, D_8x16 );
-                COPY3_IF_LT( i_cost, analysis.i_rd8x8bi, i_type, B_8x8, i_partition, D_8x8 );
+                COPY3_IF_LT( i_cost, analysis.i_rd16x8bi, i_type, B_SKIP, i_partition, D_16x16 );
+                COPY3_IF_LT( i_cost, analysis.i_rd8x16bi, i_type, B_SKIP, i_partition, D_16x16 );
+                COPY3_IF_LT( i_cost, analysis.i_rd8x8bi, i_type, B_SKIP, i_partition, D_16x16 );
 
                 h->mb.i_type = i_type;
                 h->mb.i_partition = i_partition;
