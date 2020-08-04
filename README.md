@@ -44,10 +44,10 @@ Contains MB type data in the format of:
 ```
 ##FRAME## INTRA=quantity, SKIP=quantity, INTER=quantity, B16=quantity, BX=quantity
 ```
- Where `B16` refers to  MB size of 16x16, and `BX` is any other size. Line number indicates frame number.
+Where `B16` refers to MB size of 16x16, and `BX` is any other size. Line number indicates frame number.
 
 ## Generate missing MVs
-In order to generate full and consistent number of MVs for each frame, one has to disable INTRA MB type as well as forcing all MB to have the same size, in this case, 16x16. It leaves the whole frame being left with only INTER and SKIP type MB of size 16x16. These requirements are achieved by modifying the `analyse.c` from `x264/encoder`. Under the function `void x264_macroblock_analyse( x264_t *h )`.
+In order to generate full and consistent number of MVs for each frame, one has to disable INTRA MB type as well as forcing all MB into the same size, in this case, 16x16. It will leave the whole frame being left with only INTER and SKIP type MB of size 16x16. These requirements are achieved by modifying `analyse.c` from `x264/encoder`. Under the function `void x264_macroblock_analyse( x264_t *h )`.
 
 The below results (Fig.1 ~ Fig.4) demonstrate the generation of missing MVs using the tools mentioned in [**File Description**](#File-Description) section. 
 
@@ -123,5 +123,5 @@ make install -j 4
 ```
 
 ## Troubleshoot
-[ffmpeg: error while loading shared libraries:](https://stackoverflow.com/questions/12901706/ffmpeg-error-in-linux) 
+[ffmpeg: error while loading shared libraries](https://stackoverflow.com/questions/12901706/ffmpeg-error-in-linux) 
 
