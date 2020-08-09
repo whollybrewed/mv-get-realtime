@@ -7,7 +7,7 @@ Extracts and passes the motion vectors (MV) data for each individual decoding of
 
 Compile: `Makefile`
 
-Usage: `./extact_mvs <input video>`
+Usage: `./extract_mvs <input video>`
 
 ### py_emb.py
 Embedded module in `extract.c`. Receives numpy array about MV data (frame-by-frame) for further application.
@@ -113,12 +113,7 @@ hash -r
 cd x264
 ```
 ```shell
-PATH="$HOME/bin:$PATH" PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" ./configure \
-  --prefix="$HOME/ffmpeg_build" \ 
-  --bindir="$HOME/bin" \
-  --enable-static \
-  --enable-pic && \
-PATH="$HOME/bin:$PATH" make -j 4 && \
+PATH="$HOME/bin:$PATH" PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" ./configure --prefix="$HOME/ffmpeg_build" --bindir="$HOME/bin" --enable-static --enable-pic && PATH="$HOME/bin:$PATH" make -j 4 && \
 make install -j 4
 ```
 
