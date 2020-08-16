@@ -1308,6 +1308,8 @@ static void mb_analyse_inter_p16x16( x264_t *h, x264_mb_analysis_t *a )
 
         m.cost += m.i_ref_cost;
         i_halfpel_thresh += m.i_ref_cost;
+        if (i_ref == 0)
+            // fprintf(stderr, "%d,", m.cost);
 
         if( m.cost < a->l0.me16x16.cost )
             h->mc.memcpy_aligned( &a->l0.me16x16, &m, sizeof(x264_me_t) );
@@ -2916,7 +2918,7 @@ static inline void mb_analyse_qp_rd( x264_t *h, x264_mb_analysis_t *a )
  * x264_macroblock_analyse:
  *****************************************************************************/
 void x264_macroblock_analyse( x264_t *h )
-{
+{   
     x264_mb_analysis_t analysis;
     int i_cost = COST_MAX;
 
@@ -2931,6 +2933,7 @@ void x264_macroblock_analyse( x264_t *h )
     mb_analyse_init( h, &analysis, h->mb.i_qp );
 
     /*--------------------------- Do the analysis ---------------------------*/
+    
     if( h->sh.i_type == SLICE_TYPE_I )
     {
 intra_analysis:
@@ -2942,8 +2945,8 @@ intra_analysis:
 
         i_cost = analysis.i_satd_i16x16;
         h->mb.i_type = I_16x16;
-        COPY2_IF_LT( i_cost, analysis.i_satd_i4x4, h->mb.i_type, I_4x4 );
-        COPY2_IF_LT( i_cost, analysis.i_satd_i8x8, h->mb.i_type, I_8x8 );
+        // COPY2_IF_LT( i_cost, analysis.i_satd_i4x4, h->mb.i_type, I_4x4 );
+        // COPY2_IF_LT( i_cost, analysis.i_satd_i8x8, h->mb.i_type, I_8x8 );
         if( analysis.i_satd_pcm < i_cost )
             h->mb.i_type = I_PCM;
 
@@ -3036,6 +3039,7 @@ skip_analysis:
             mb_analyse_load_costs( h, &analysis );
 
             mb_analyse_inter_p16x16( h, &analysis );
+            
 
             if( h->mb.i_type == P_SKIP )
             {
@@ -3207,6 +3211,7 @@ skip_analysis:
                 i_type = P_L0;
                 i_partition = D_16x16;
                 i_cost = analysis.l0.i_rd16x16;
+                
                 COPY2_IF_LT( i_cost, analysis.l0.i_cost16x8, i_partition, D_16x16 );
                 COPY2_IF_LT( i_cost, analysis.l0.i_cost8x16, i_partition, D_16x16 );
                 COPY3_IF_LT( i_cost, analysis.l0.i_cost8x8, i_partition, D_16x16, i_type, P_L0 );
@@ -3217,7 +3222,7 @@ skip_analysis:
                 intra_rd( h, &analysis, i_satd_inter * 5/4 + 1 );
             }
 
-            // COPY2_IF_LT( i_cost, analysis.i_satd_i16x16, i_type, I_16x16 );
+            COPY2_IF_LT( i_cost, analysis.i_satd_i16x16, i_type, I_16x16 );
             // COPY2_IF_LT( i_cost, analysis.i_satd_i8x8, i_type, I_8x8 );
             // COPY2_IF_LT( i_cost, analysis.i_satd_i4x4, i_type, I_4x4 );
             // COPY2_IF_LT( i_cost, analysis.i_satd_pcm, i_type, I_PCM );
@@ -3303,6 +3308,7 @@ skip_analysis:
     }
     else if( h->sh.i_type == SLICE_TYPE_B )
     {
+        
         int i_bskip_cost = COST_MAX;
         int b_skip = 0;
 
