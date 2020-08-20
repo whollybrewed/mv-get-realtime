@@ -105,6 +105,7 @@ void ff_print_debug_info2(AVCodecContext *avctx, AVFrame *pict, uint8_t *mbskip_
                          int *low_delay,
                          int mb_width, int mb_height, int mb_stride, int quarter_sample)
 {
+    int frame = pict->coded_picture_number;
     int num_inter = 0, num_intra = 0, num_skip = 0;
     int size_16 = 0, size_other = 0;
     if ((avctx->export_side_data & AV_CODEC_EXPORT_DATA_MVS) && mbtype_table && motion_val[0]) {
@@ -197,11 +198,13 @@ void ff_print_debug_info2(AVCodecContext *avctx, AVFrame *pict, uint8_t *mbskip_
 
     if (avctx->debug & (FF_DEBUG_SKIP | FF_DEBUG_QP | FF_DEBUG_MB_TYPE)) {
         int x,y;
-
+        
         // av_log(avctx, AV_LOG_DEBUG, "New frame, type: %c\n",
         //        av_get_picture_type_char(pict->pict_type));
         for (y = 0; y < mb_height; y++) {
             for (x = 0; x < mb_width; x++) {
+                int sx = x * 16 + 8;
+                int sy = y * 16 + 8;
                 if (avctx->debug & FF_DEBUG_SKIP) {
                     int count = mbskip_table ? mbskip_table[x + y * mb_stride] : 0;
                     if (count > 9)
@@ -215,43 +218,66 @@ void ff_print_debug_info2(AVCodecContext *avctx, AVFrame *pict, uint8_t *mbskip_
                 if (avctx->debug & FF_DEBUG_MB_TYPE) {
                     int mb_type = mbtype_table[x + y * mb_stride];
                     // Type & MV direction
-                    if (IS_PCM(mb_type))
+                    if (IS_PCM(mb_type)){
                         // av_log(avctx, AV_LOG_DEBUG, "P");
                         num_intra++;
-                    else if (IS_INTRA(mb_type) && IS_ACPRED(mb_type))
+                         // fprintf(stderr, "%d %d %d INTRA\n",frame, sx, sy);
+                    }
+                    else if (IS_INTRA(mb_type) && IS_ACPRED(mb_type)){
                         // av_log(avctx, AV_LOG_DEBUG, "A");
                         num_intra++;
-                    else if (IS_INTRA4x4(mb_type))
+                         // fprintf(stderr, "%d %d %d INTRA\n",frame, sx, sy);
+                    }
+                    else if (IS_INTRA4x4(mb_type)){
                         // av_log(avctx, AV_LOG_DEBUG, "i");
                         num_intra++;
-                    else if (IS_INTRA16x16(mb_type))
+                         // fprintf(stderr, "%d %d %d INTRA\n",frame, sx, sy);
+                    }
+                    else if (IS_INTRA16x16(mb_type)){
                         // av_log(avctx, AV_LOG_DEBUG, "I");
                         num_intra++;
-                    else if (IS_DIRECT(mb_type) && IS_SKIP(mb_type))
+                         // fprintf(stderr, "%d %d %d INTRA\n",frame, sx, sy);
+                    }
+                    else if (IS_DIRECT(mb_type) && IS_SKIP(mb_type)){
                         // av_log(avctx, AV_LOG_DEBUG, "d");
                         num_skip++;
-                    else if (IS_DIRECT(mb_type))
+                         // fprintf(stderr, "%d %d %d SKIP\n",frame, sx, sy);
+                    }
+                    else if (IS_DIRECT(mb_type)){
                         // av_log(avctx, AV_LOG_DEBUG, "D");
                         num_skip++;
-                    else if (IS_GMC(mb_type) && IS_SKIP(mb_type))
+                         // fprintf(stderr, "%d %d %d SKIP\n",frame, sx, sy);
+                    }
+                    else if (IS_GMC(mb_type) && IS_SKIP(mb_type)){
                         // av_log(avctx, AV_LOG_DEBUG, "g");
                         num_skip++;
-                    else if (IS_GMC(mb_type))
+                         // fprintf(stderr, "%d %d %d SKIP\n",frame, sx, sy);
+                    }
+                    else if (IS_GMC(mb_type)){
                         // av_log(avctx, AV_LOG_DEBUG, "G");
                         num_skip++;
-                    else if (IS_SKIP(mb_type))
+                         // fprintf(stderr, "%d %d %d SKIP\n",frame, sx, sy);
+                    }
+                    else if (IS_SKIP(mb_type)){
                         // av_log(avctx, AV_LOG_DEBUG, "S");
                         num_skip++;
-                    else if (!USES_LIST(mb_type, 1))
+                         // fprintf(stderr, "%d %d %d SKIP\n",frame, sx, sy);
+                    }
+                    else if (!USES_LIST(mb_type, 1)){
                         // av_log(avctx, AV_LOG_DEBUG, ">");
                         num_inter++;
-                    else if (!USES_LIST(mb_type, 0))
+                         // fprintf(stderr, "%d %d %d INTER\n",frame, sx, sy);
+                    }
+                    else if (!USES_LIST(mb_type, 0)){
                         // av_log(avctx, AV_LOG_DEBUG, "<");
                         num_inter++;
+                         // fprintf(stderr, "%d %d %d INTER\n",frame, sx, sy);
+                    }
                     else {
                         // av_assert2(USES_LIST(mb_type, 0) && USES_LIST(mb_type, 1));
                         // av_log(avctx, AV_LOG_DEBUG, "X");
                         num_inter++;
+                         // fprintf(stderr, "%d %d %d INTER\n",frame, sx, sy);
                     }
 
                     // segmentation
@@ -267,6 +293,8 @@ void ff_print_debug_info2(AVCodecContext *avctx, AVFrame *pict, uint8_t *mbskip_
                      else if (IS_16X16(mb_type))
                     //     av_log(avctx, AV_LOG_DEBUG, " ");
                             size_16++;
+                     else if ( IS_INTRA16x16(mb_type))
+                            size_16++;
                      else
                     //     av_log(avctx, AV_LOG_DEBUG, "?");
                             size_other++;
@@ -280,7 +308,8 @@ void ff_print_debug_info2(AVCodecContext *avctx, AVFrame *pict, uint8_t *mbskip_
         }
         // av_log(avctx, AV_LOG_DEBUG, "\n");
         fprintf(stderr, "##FRAME## INTRA=%d, SKIP=%d, INTER=%d, B16=%d, BX=%d\n", 
-                                    num_intra, num_skip, num_inter, size_16, size_other);}
+                                    num_intra, num_skip, num_inter, size_16, size_other);
+    }
 
 #if FF_API_DEBUG_MV
     if ((avctx->debug & (FF_DEBUG_VIS_QP | FF_DEBUG_VIS_MB_TYPE)) ||
