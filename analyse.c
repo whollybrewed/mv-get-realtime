@@ -3212,17 +3212,19 @@ skip_analysis:
                 i_partition = D_16x16;
                 i_cost = analysis.l0.i_rd16x16;
                 
-                COPY2_IF_LT( i_cost, analysis.l0.i_cost16x8, i_partition, D_16x16 );
-                COPY2_IF_LT( i_cost, analysis.l0.i_cost8x16, i_partition, D_16x16 );
-                COPY3_IF_LT( i_cost, analysis.l0.i_cost8x8, i_partition, D_16x16, i_type, P_L0 );
+                // COPY2_IF_LT( i_cost, analysis.l0.i_cost16x8, i_partition, D_16x16 );
+                // COPY2_IF_LT( i_cost, analysis.l0.i_cost8x16, i_partition, D_16x16 );
+                // COPY3_IF_LT( i_cost, analysis.l0.i_cost8x8, i_partition, D_16x16, i_type, P_L0 );
                 h->mb.i_type = i_type;
                 h->mb.i_partition = i_partition;
                 if( i_cost < COST_MAX )
                     mb_analyse_transform_rd( h, &analysis, &i_satd_inter, &i_cost );
                 intra_rd( h, &analysis, i_satd_inter * 5/4 + 1 );
             }
-
+            
             COPY2_IF_LT( i_cost, analysis.i_satd_i16x16, i_type, I_16x16 );
+            fprintf(stderr, "fr=%d, type:%d, x:%d, y:%d, cost:%d\n", 
+                            h->i_frame + 1, i_type, h->mb.i_mb_x * 8, h->mb.i_mb_y * 8, i_cost);
             // COPY2_IF_LT( i_cost, analysis.i_satd_i8x8, i_type, I_8x8 );
             // COPY2_IF_LT( i_cost, analysis.i_satd_i4x4, i_type, I_4x4 );
             // COPY2_IF_LT( i_cost, analysis.i_satd_pcm, i_type, I_PCM );
