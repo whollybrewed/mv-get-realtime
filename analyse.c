@@ -3221,10 +3221,11 @@ skip_analysis:
                     mb_analyse_transform_rd( h, &analysis, &i_satd_inter, &i_cost );
                 intra_rd( h, &analysis, i_satd_inter * 5/4 + 1 );
             }
-            
-            COPY2_IF_LT( i_cost, analysis.i_satd_i16x16, i_type, I_16x16 );
-            fprintf(stderr, "fr=%d, type:%d, x:%d, y:%d, cost:%d\n", 
-                            h->i_frame + 1, i_type, h->mb.i_mb_x * 8, h->mb.i_mb_y * 8, i_cost);
+            int i_cost0 = i_cost; 
+            int i_type0 = i_type;
+            COPY2_IF_LT( i_cost0, analysis.i_satd_i16x16, i_type0, I_16x16 );
+            fprintf(stderr, "%d %d %d %d %d\n", 
+                            h->i_frame + 1, h->mb.i_mb_x * 8 + 8, h->mb.i_mb_y * 8 + 8, i_type0, i_cost0);
             // COPY2_IF_LT( i_cost, analysis.i_satd_i8x8, i_type, I_8x8 );
             // COPY2_IF_LT( i_cost, analysis.i_satd_i4x4, i_type, I_4x4 );
             // COPY2_IF_LT( i_cost, analysis.i_satd_pcm, i_type, I_PCM );
