@@ -13,7 +13,7 @@ class MvDumper(object):
         self.lib.release()
 
 # example
-mvObj = MvDumper('/home/user/mv-get-realtime/extract_mvs.so')
+mvObj = MvDumper('./lextractmvs.so')
 while (mvObj.readFrame() >= 0):
     ret = mvObj.decode()
     if (ret < 0):
