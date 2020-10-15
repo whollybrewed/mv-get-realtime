@@ -35,7 +35,7 @@ static int video_frame_count = 0;
 
 static int maxfr, minfr, maxmv = 0, minmv = INT_MAX;
 
-static int decode_packet(const AVPacket *pkt)
+static int decode_packet(const AVPacket *pkt, int* data_mv)
 {   
     // int mv_arr [8];
     int ret = avcodec_send_packet(video_dec_ctx, pkt);
@@ -62,7 +62,7 @@ static int decode_packet(const AVPacket *pkt)
             if (sd) {
                 const AVMotionVector *mvs = (const AVMotionVector *)sd->data;
                 int num_mvs = sd->size / sizeof(*mvs);
-                int data_mv[4 * num_mvs + 1];
+                
                 data_mv[0] = video_frame_count;
                 // if (num_mvs > maxmv) {
                 //     maxmv = num_mvs;
@@ -87,11 +87,11 @@ static int decode_packet(const AVPacket *pkt)
                     // }
                     // printf("\n");
                 }
-                for(int j = 0; j <= num_mvs * 4; j++){
-                    printf("%d ", data_mv[j]);
-                    if (j % 4 == 0)
-                        printf("\n");
-                }
+                // for(int j = 0; j <= num_mvs * 4; j++){
+                //     printf("%d ", data_mv[j]);
+                //     if (j % 4 == 0)
+                //         printf("\n");
+                // }
                 // printf("%d ", *mv_arr[0]);
             }
             av_frame_unref(frame);
@@ -146,7 +146,7 @@ static int open_codec_context(AVFormatContext *fmt_ctx, enum AVMediaType type)
 }
 
 AVPacket pkt = { 0 };
-void setup()
+void setup(const char* src_filename)
 {
 
     int ret = 0;
@@ -154,7 +154,7 @@ void setup()
     //     fprintf(stderr, "Usage: %s <video>\n", argv[0]);
     //     exit(1);
     // }
-    src_filename = "input.mp4";
+    // src_filename = "input.mp4";
     if (avformat_open_input(&fmt_ctx, src_filename, NULL, NULL) < 0) {
         fprintf(stderr, "Could not open source file %s\n", src_filename);
         exit(1);
@@ -200,9 +200,9 @@ int call_readframe()
     return av_read_frame(fmt_ctx, &pkt);
 }
 
-int call_dec()
+int call_dec(int* data_mv)
 {
-    int ret = decode_packet(&pkt);
+    int ret = decode_packet(&pkt, data_mv);
     av_packet_unref(&pkt);
     return ret;
 }
@@ -210,7 +210,7 @@ int call_dec()
 void release()
 {
     /* flush cached frames */
-    decode_packet(NULL);
+    decode_packet(NULL, NULL);
     avcodec_free_context(&video_dec_ctx);
     avformat_close_input(&fmt_ctx);
     av_frame_free(&frame);
