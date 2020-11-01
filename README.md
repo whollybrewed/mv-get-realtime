@@ -33,6 +33,20 @@ Plots stacked bar chart of MV and MB for a given frame.
 
 Usage: `python3 plotframeinfo.py <MV data> <MB data> <frame number>`
 
+
+### extgetmv.py
+An API used to fetch MV data from ffmpeg to Python List.
+
+Usage: `python3 extgetmv.py <video.mp4>`
+
+​​​Contents in the buffer (size is 1 MV):
+
+- buffer[0] :  frame number
+- buffer[index % 4 == 1] : src_x
+- buffer[index % 4 == 2] : src_y
+- buffer[index % 4 == 3] : dst_x
+- buffer[index % 4 == 0] : dst_y  (note: index != 0)
+
 ### mvs.txt
 Contains MV data as:
 ```
