@@ -41,14 +41,18 @@ while (mvObj.readFrame() >= 0):
     ret = mvObj.decode()
     # at the moment, buffer size = 1 frame
     buffer = list(mvObj.ptr)
-    # print(buffer[0])
     t1 = time.time()
-    vid.set(cv2.CAP_PROP_POS_FRAMES, buffer[0])
-    res, image = vid.read()
-    t2 = time.time()
+    # print(buffer[0])
+    
+    # vid.set(cv2.CAP_PROP_POS_FRAMES, buffer[0])
+    if count <= buffer[0]:
+        t2 = time.time()
+        res, image = vid.read()
+        t3 = time.time()
     tmv = tmv + t1 - t0
-    tpx = tpx + t2 - t1
-    count = count + 1
+    tpx = tpx + t3 - t2
+    count = count + res
+    # print(count)
     print(count,"/", total_fr, end = "\r", flush = True)
     if (ret < 0):
         break

@@ -56,10 +56,11 @@ static int decode_packet(const AVPacket *pkt, int* data_mv)
         if (ret >= 0) {
             int i;
             AVFrameSideData *sd;
-            video_frame_count++;
+            
             // printf("\rProcessing frame: %d\r", video_frame_count);
             sd = av_frame_get_side_data(frame, AV_FRAME_DATA_MOTION_VECTORS);
             if (sd) {
+                video_frame_count++;
                 const AVMotionVector *mvs = (const AVMotionVector *)sd->data;
                 int num_mvs = sd->size / sizeof(*mvs);
                 
