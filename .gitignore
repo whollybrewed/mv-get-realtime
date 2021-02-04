@@ -1,1 +1,7 @@
 .vscode/
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.txt
+*.mp4
